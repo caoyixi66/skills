@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android 全流程"
+  short_description: "统一管理 Android 源码、设备、OTA、Git 和 GitLab 工作回顾。"
+  default_prompt: "分析当前 Android 项目或 GitLab 工作回顾任务；先确认机型、源码工作区、GitLab 地址、认证方式、时间范围和输出要求，再按专题资料执行。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "修复 Windows"
+  short_description: "排查文件关联、打开方式残留和 Shell 缓存问题"
+  default_prompt: "请先确认问题属于默认关联、候选应用注册、打包应用注册还是 Shell 缓存，再备份并验证实际 Windows 界面结果。"
