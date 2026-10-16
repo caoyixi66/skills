@@ -12,6 +12,7 @@ description: "排查和修复 Windows 文件关联、打开方式列表、残留
 - 双击文件后无法用预期程序打开。
 - “打开方式 -> 选择其他应用”仍显示已经移动、卸载或不希望出现的程序。
 - 修改 exe、软件目录或快捷方式位置后，快捷访问、开始菜单或打开方式出现残留。
+- 准备移动已安装软件目录，需要评估固定路径、更新器、服务、驱动和文件关联的风险。
 - 注册表看起来已经修改，但用户界面没有变化。
 
 不要把“注册表查询成功”当作修复完成。最终结果必须以用户可见的实际窗口、重新执行的打开动作或用户提供的新截图为准。
@@ -51,6 +52,10 @@ description: "排查和修复 Windows 文件关联、打开方式列表、残留
    - 必要时只重启相关 Shell 进程，不重启整机作为第一选择
 5. 重新打开同一个文件的实际对话框，使用截图、OCR、UI Automation 或用户确认核对列表。
 
+若已卸载的软件仍出现在 OpenWithView，先关闭并重新启动工具；除常见关联项外，针对旧 exe 路径检查 `HKCU\Software\Microsoft\Windows\CurrentVersion\Start\TileProperties` 和 `HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store`。这些是历史记录线索，不要仅凭存在就断定它们是工具的直接数据源。移动已安装程序前还应检查卸载项、`App Paths`、开机启动、服务、任务、快捷方式、文件关联、更新器及驱动；安装型软件优先通过卸载重装到目标路径，便携程序可按实际依赖评估。
+
+OpenWithView v1.11 是旧版 NirSoft 工具，文档只声明支持 Windows XP/2003/Vista；在 Windows 11 上它可能显示历史或已禁用候选。截图中 `Disabled=Yes` 的项目不能证明现代“选择应用”窗口仍会显示或程序仍可用。必须把 OpenWithView 结果和全新的 Windows `OpenAs_RunDLL`/实际“选择其他应用”窗口分开验证；OpenWithView 的禁用列表也不等于已删除注册表。
+
 ## 修复原则
 
 - 先对命中的注册表键执行 `reg export` 备份，备份路径写入结果。
@@ -61,6 +66,7 @@ description: "排查和修复 Windows 文件关联、打开方式列表、残留
 - 删除或移动前先确认绝对路径和影响范围。默认不删除用户数据和软件目录。
 - 如果需要管理员权限修改 `HKLM`，先说明权限边界；没有权限时不要假装已经修改成功。
 - 每次修改后都重新启动实际使用的 `OpenWith.exe`，并重新验证窗口，不要只查看 PowerShell 输出。
+- 对扩展名候选做去重时，同时检查 `FileExts\<ext>\OpenWithList`、`OpenWithProgids`、HKCU/HKLM 的 `Applications`/ProgID 和 `Capabilities`；删除 `OpenWithList` 中某个字母值后必须同步更新 `MRUList`。重装应用不会自动清空用户历史列表。
 
 ## 重要判断
 
@@ -68,4 +74,6 @@ description: "排查和修复 Windows 文件关联、打开方式列表、残留
 
 `OpenWith.exe` 可能是长生命周期的 COM/系统进程。终止旧实例有助于刷新，但仅终止进程不保证能解决问题；如果候选应用仍被应用注册数据库枚举出来，还需要针对应用或 ProgID 增加当前用户级 `NoOpenWith` 覆盖。
 
-详细的失败分析、案例证据和 PowerShell 模板见 [references/openwith-troubleshooting.md](references/openwith-troubleshooting.md)。
+空白图标必须单独排查：确认应用 EXE/ICO 真实存在并能提取图标，再检查 ProgID/Applications 的 `DefaultIcon`、开始菜单/桌面快捷方式的 `IconLocation`、机器级 `App Paths`/卸载项，以及 Explorer 图标缓存。只修命令行或只执行 `ie4uinit` 不能证明图标已修复。移动应用后，旧快捷方式可能比注册表更直接地造成空白图标；系统开始菜单 MSI 快捷方式可能受 ACL/TrustedInstaller 保护，应先备份，再用管理员流程重建并回读验证。
+
+详细的失败分析、移动目录风险、案例证据和 PowerShell 模板见 [references/openwith-troubleshooting.md](references/openwith-troubleshooting.md)。
